@@ -8,6 +8,15 @@ public:
     int rows, cols;
     std::vector<std::vector<Cell>> grid;
     std::vector<std::vector<int>> clueNumbers; // 0 means no number
+    struct WordSlot {
+        int r = 0, c = 0; // start
+        int length = 0;
+        bool across = true;
+        int clueNumber = 0;
+        std::string word; // placed word (uppercase) or empty
+    };
+
+    std::vector<WordSlot> slots;
 
     CrosswordGrid(int r, int c);
 
@@ -34,4 +43,11 @@ public:
 
     // Recompute clue numbers after grid changes
     void recomputeClueNumbers();
+
+    // Slot helpers
+    void buildSlots();
+    const std::vector<WordSlot>& getSlots() const { return slots; }
+    std::vector<int> getSlotsForCell(int r, int c) const;
+    bool placeWordInSlot(int slotIndex, const std::string& word);
+    void clearSlotAssignments();
 };

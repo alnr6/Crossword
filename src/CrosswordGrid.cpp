@@ -153,3 +153,78 @@ void CrosswordGrid::recomputeClueNumbers() {
         }
     }
 }
+
+void CrosswordGrid::buildSlots() {
+    slots.clear();
+    // across slots
+    for (int i = 0; i < rows; ++i) {
+        int j = 0;
+        while (j < cols) {
+            while (j < cols && grid[i][j].isBlocked) ++j;
+            int start = j;
+            while (j < cols && !grid[i][j].isBlocked) ++j;
+            int len = j - start;
+            if (len >= 2) {
+                WordSlot ws; ws.r = i; ws.c = start; ws.length = len; ws.across = true; ws.word = std::string(len, ' ');
+                ws.clueNumber = clueNumbers[i][start];
+                slots.push_back(ws);
+            }
+        }
+    }
+
+    // down slots
+    for (int j = 0; j < cols; ++j) {
+        int i = 0;
+        while (i < rows) {
+            while (i < rows && grid[i][j].isBlocked) ++i;
+            int start = i;
+            while (i < rows && !grid[i][j].isBlocked) ++i;
+            int len = i - start;
+            if (len >= 2) {
+                WordSlot ws; ws.r = start; ws.c = j; ws.length = len; ws.across = false; ws.word = std::string(len, ' ');
+                ws.clueNumber = clueNumbers[start][j];
+                slots.push_back(ws);
+            }
+        }
+    }
+}
+
+std::vector<int> CrosswordGrid::getSlotsForCell(int r, int c) const {
+    std::vector<int> out;
+    for (size_t i = 0; i < slots.size(); ++i) {
+        const WordSlot& s = slots[i];
+        if (s.across) {
+            if (r == s.r && c >= s.c && c < s.c + s.length) out.push_back((int)i);
+        } else {
+            if (c == s.c && r >= s.r && r < s.r + s.length) out.push_back((int)i);
+        }
+    }
+    return out;
+}
+
+bool CrosswordGrid::placeWordInSlot(int slotIndex, const std::string& word) {
+    if (slotIndex < 0 || slotIndex >= (int)slots.size()) return false;
+    WordSlot& s = slots[slotIndex];
+    if ((int)word.size() != s.length) return false;
+    // check conflicts
+    for (int k = 0; k < s.length; ++k) {
+        int rr = s.r + (s.across ? 0 : k);
+        int cc = s.c + (s.across ? k : 0);
+        char existing = grid[rr][cc].letter;
+        if (existing != ' ' && existing != word[k]) return false;
+    }
+    // place
+    for (int k = 0; k < s.length; ++k) {
+        int rr = s.r + (s.across ? 0 : k);
+        int cc = s.c + (s.across ? k : 0);
+        grid[rr][cc].letter = word[k];
+        grid[rr][cc].isEditable = false;
+    }
+    s.word = word;
+    return true;
+}
+
+void CrosswordGrid::clearSlotAssignments() {
+    for (auto &s : slots) s.word.clear();
+    for (int i = 0; i < rows; ++i) for (int j = 0; j < cols; ++j) if (!grid[i][j].isBlocked) { grid[i][j].letter = ' '; grid[i][j].isEditable = true; }
+}

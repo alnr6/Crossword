@@ -1,0 +1,71 @@
+
+void GUI::drawPuzzleSelect() {
+    if (!fontLoaded) return;
+
+    // Title
+    sf::Text titleText(font, "Select a Puzzle", 48u);
+    titleText.setFillColor(sf::Color::Black);
+    titleText.setPosition(sf::Vector2f(100.f, 40.f));
+    window.draw(titleText);
+
+    // List of puzzles
+    const auto& puzzles = puzzleBrowser.getPuzzles();
+    float y = 150.f;
+    const float itemHeight = 40.f;
+
+    for (int i = 0; i < puzzleBrowser.count(); ++i) {
+        if (i < puzzleScrollOffset) continue;
+        if (y > 700.f) break;
+
+        sf::RectangleShape itemBg(sf::Vector2f(400.f, itemHeight));
+        itemBg.setPosition(sf::Vector2f(100.f, y));
+        itemBg.setFillColor(i == puzzleSelectedIndex ? sf::Color::Cyan : sf::Color(220, 220, 220));
+        itemBg.setOutlineThickness(1);
+        itemBg.setOutlineColor(sf::Color::Black);
+        window.draw(itemBg);
+
+        sf::Text itemText(font, puzzles[i], 18u);
+        itemText.setFillColor(sf::Color::Black);
+        itemText.setPosition(sf::Vector2f(110.f, y + 10.f));
+        window.draw(itemText);
+
+        y += itemHeight + 5.f;
+    }
+
+    // Instructions
+    sf::Text instrText(font, "Up/Down: Select | Enter: Load | Esc: Back", 14u);
+    instrText.setFillColor(sf::Color::DarkGray);
+    instrText.setPosition(sf::Vector2f(50.f, 750.f));
+    window.draw(instrText);
+}
+
+void GUI::handlePuzzleSelectClick(int x, int y) {
+    // Simple click-to-select
+    const auto& puzzles = puzzleBrowser.getPuzzles();
+    float itemY = 150.f;
+    const float itemHeight = 40.f;
+    for (int i = 0; i < puzzleBrowser.count(); ++i) {
+        if (x >= 100.f && x <= 500.f && y >= itemY && y <= itemY + itemHeight) {
+            puzzleSelectedIndex = i;
+            loadPuzzleByIndex(i);
+            gameState = GameState::Playing;
+            return;
+        }
+        itemY += itemHeight + 5.f;
+        if (itemY > 700.f) break;
+    }
+}
+
+void GUI::loadPuzzleByIndex(int index) {
+    std::string path = puzzleBrowser.getFullPath(index);
+    if (!path.empty() && grid.loadFromFile(path)) {
+        grid.recomputeClueNumbers();
+        grid.buildSlots();
+        selectedRow = -1;
+        selectedCol = -1;
+        history.clear();
+        std::cerr << "Loaded puzzle: " << path << std::endl;
+    } else {
+        std::cerr << "Failed to load puzzle: " << path << std::endl;
+    }
+}
