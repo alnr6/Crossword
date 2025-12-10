@@ -5,7 +5,7 @@ int main() {
     CrosswordGrid grid(10, 10);
 
     // Randomize blocked cells with 25% density
-   // grid.randomizeBlockedCells(0.25);
+    grid.randomizeBlockedCells(0.25);
 
     GUI gui(grid);
     gui.run();
