@@ -207,7 +207,7 @@ void GUI::handleKeyPress(const sf::Event::KeyPressed& key) {
     if (key.code == sf::Keyboard::Key::H) { provideHint(); return; }
 
     // Try generator (G) if dictionary loaded
-    if (key.code == sf::Keyboard::Key::.) {
+    if (key.code == sf::Keyboard::Key::Z) {
         std::vector<std::string> pool = {"HELLO","WORLD","CROSS","WORDS","PUZZLE","GRID","STACK","QUEUE","TREE","GRAPH","ARRAY","VECTOR"};
         grid.clearSlotAssignments();
         grid.buildSlots();
@@ -493,7 +493,7 @@ void GUI::drawHelpPanel() {
         {"Ctrl+S", "Save to autosave.txt"},
         {"Ctrl+L", "Load from autosave.txt"},
         {"H", "Hint for selected cell"},
-        {".", "Clear Puzzle"},
+        {"Z", "Clear puzzle"},
         {"Arrow Keys", "Move selection"},
         {"Backspace", "Clear cell"},
         {"Letters", "Fill cell"},
